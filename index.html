@@ -49,7 +49,17 @@
 
   <label>Tレベル（T1〜T11）:
     <select id="tLevel">
-      ${[...Array(11).keys()].map(i => `<option value="${i+1}">T${i+1}</option>`).join("")}
+      <option value="1">T1</option>
+      <option value="2">T2</option>
+      <option value="3">T3</option>
+      <option value="4">T4</option>
+      <option value="5">T5</option>
+      <option value="6">T6</option>
+      <option value="7">T7</option>
+      <option value="8">T8</option>
+      <option value="9">T9</option>
+      <option value="10">T10</option>
+      <option value="11">T11</option>
     </select>
   </label>
 
@@ -70,9 +80,8 @@
     </select>
   </label>
 
-  <label id="dynamicLabel">訓練したい人数:
-    <input type="number" id="inputValue" value="1000">
-  </label>
+  <label id="dynamicLabel">訓練したい人数:</label>
+  <input type="number" id="inputValue" value="1000">
 
   <label>訓練速度バフ（％）:
     <input type="number" id="speedBuff" value="500">
@@ -80,7 +89,15 @@
 
   <label>リスカのレベル:
     <select id="riskaLevel">
-      ${[...Array(9).keys()].map(i => `<option value="${i}">${i}</option>`).join("")}
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
     </select>
   </label>
 
@@ -122,16 +139,16 @@
     function updateLabel() {
       const mode = document.getElementById("mode").value;
       const label = document.getElementById("dynamicLabel");
-      if (mode === "count") label.innerHTML = "訓練したい人数:<input type='number' id='inputValue'>";
-      if (mode === "power") label.innerHTML = "獲得したい戦力:<input type='number' id='inputValue'>";
-      if (mode === "points") label.innerHTML = "獲得したいイベントポイント:<input type='number' id='inputValue'>";
+      if (mode === "count") label.textContent = "訓練したい人数:";
+      if (mode === "power") label.textContent = "獲得したい戦力:";
+      if (mode === "points") label.textContent = "獲得したいイベントポイント:";
     }
 
     function calculate() {
       const t = parseInt(document.getElementById("tLevel").value);
       const type = document.getElementById("type").value;
       const mode = document.getElementById("mode").value;
-      const raw = parseFloat(document.getElementById("inputValue").value);
+      const raw = parseFloat(document.getElementById("inputValue").value) || 0;
       const buff = parseFloat(document.getElementById("speedBuff").value);
       const rLv = parseInt(document.getElementById("riskaLevel").value);
       const skill = document.getElementById("skill25").checked;
