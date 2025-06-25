@@ -2,46 +2,29 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>パズコン訓練計算ツール</title>
+  <title>パズコン兵士訓練計算ツール</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
     body {
       font-family: 'Noto Sans JP', sans-serif;
       background: #f7f9fc;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-      line-height: 1.6;
-      max-width: 640px;
-      margin: auto;
+      margin: 0; padding: 20px;
+      color: #333; line-height: 1.6;
     }
-    h1 {
-      text-align: center;
-      color: #2a2a2a;
-      margin-bottom: 1em;
-    }
-    label {
-      display: block;
-      margin-bottom: 12px;
-      font-weight: 600;
-    }
+    h1 { text-align: center; color: #2a2a2a; margin-bottom: 1em; }
+    label { display: block; margin-bottom: 12px; font-weight: 600; }
     input, select {
-      width: 100%;
-      padding: 10px;
-      font-size: 1em;
-      margin-top: 4px;
+      width: 100%; padding: 10px;
+      font-size: 1em; margin-top: 4px;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      background-color: #fff;
+      border-radius: 6px; background-color: #fff;
     }
     input[type="checkbox"] {
-      width: auto;
-      margin-right: 6px;
+      width: auto; margin-right: 6px;
     }
     button {
-      background: #0077cc;
-      color: white;
+      background: #0077cc; color: white;
       padding: 12px 24px;
       font-size: 1em;
       border: none;
@@ -49,25 +32,22 @@
       cursor: pointer;
       margin-top: 20px;
     }
-    button:hover {
-      background: #005fa3;
-    }
     .result {
-      margin-top: 30px;
-      padding: 20px;
+      margin-top: 30px; padding: 20px;
       background: white;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       font-size: 1.05em;
     }
-    .result b {
-      color: #004488;
+    @media (min-width: 600px) {
+      body { max-width: 600px; margin: auto; }
     }
   </style>
 </head>
 <body>
   <h1>パズコン兵士訓練計算ツール</h1>
-    <label>Tレベル（T1〜T11）:
+
+  <label>Tレベル（T1〜T11）:
     <select id="tLevel">
       ${[...Array(11).keys()].map(i => `<option value="${i+1}">T${i+1}</option>`).join("")}
     </select>
@@ -83,18 +63,18 @@
   </label>
 
   <label>訓練人数 or 戦力 or ポイント:
-    <select id="inputMode" onchange="toggleInputMode()">
-      <option value="count">訓練したい人数</option>
+    <select id="mode" onchange="updateLabel()">
+      <option value="count">訓練人数</option>
       <option value="power">獲得したい戦力</option>
       <option value="points">獲得したいイベントポイント</option>
     </select>
   </label>
 
-  <label id="inputLabel">訓練したい人数:
-    <input type="number" id="mainInput" value="1000">
+  <label id="dynamicLabel">訓練したい人数:
+    <input type="number" id="inputValue" value="1000">
   </label>
 
-  <label>訓練速度バフ（%）:
+  <label>訓練速度バフ（％）:
     <input type="number" id="speedBuff" value="500">
   </label>
 
@@ -104,9 +84,7 @@
     </select>
   </label>
 
-  <label>
-    <input type="checkbox" id="skill25"> スキル（−25%）をONにする
-  </label>
+  <label><input type="checkbox" id="skill25"> スキル（−25%）をONにする</label>
 
   <label>コスト軽減率を手入力（任意）:
     <input type="number" id="manualReduction" placeholder="例：28">
@@ -114,99 +92,83 @@
 
   <label>時間表示単位:
     <select id="timeUnit">
-      <option value="d">日</option>
-      <option value="h">時間</option>
-      <option value="m">分</option>
+      <option value="day">日</option>
+      <option value="hour">時間</option>
+      <option value="minute">分</option>
     </select>
   </label>
 
   <button onclick="calculate()">計算する</button>
 
-  <div class="result" id="output">
-    ▼ここに訓練時間と資源コストが表示されます
-  </div>
+  <div class="result" id="output">▼ここに訓練時間と資源コストが表示されます</div>
+
   <script>
-  const powerPerT = [0, 4, 6, 8, 12, 15, 20, 25, 33, 45, 60, 80, 100, 125, 150];
-  const pointsPerT = [0, 5, 10, 15, 22, 30, 40, 55, 70, 85, 110, 120, 150, 160, 190];
-  const baseTimeSec = [0, 18, 23, 30, 39, 51, 66, 81, 99, 120, 150, 260];
-  const riskaReduction = [0, 3, 4.5, 6, 9, 12, 18.75, 24, 26, 28];
+    const baseTime = [18,23,30,39,51,66,81,99,120,150,260]; // 秒/人
+    const riskaReduction = [0, 3, 4.5, 6, 9, 12, 18.75, 24, 26];
+    const powerList = [4, 6, 8, 12, 15, 20, 25, 33, 45, 60, 80, 100, 125, 150];
+    const eventPoints = [5,10,15,22,30,40,55,70,85,110,120,150,160,190];
 
-  const baseCost = {
-    infantry: [
-      [43.2, 0, 0, 0], [49, 15.2, 0, 0], [85.7, 17.3, 0, 0],
-      [96.5, 30.3, 1.5, 0], [157.7, 36, 3.6, 0], [172.2, 59.8, 5.1, 0],
-      [273.6, 69.2, 9.4, 0.8], [295.2, 114.5, 13, 1.5],
-      [448.6, 131.1, 23.8, 3.6], [467.3, 215.3, 31, 5.1],
-      [664.56, 234.72, 54, 10.08]
-    ],
-    cavalry: [
-      [38.2, 0, 0, 0], [54, 12.3, 0, 0], [74.9, 17.3, 0, 0],
-      [101.6, 25.2, 1.5, 0], [144.8, 36, 2.9, 0], [186.5, 49.7, 5.1, 0],
-      [250.6, 69.2, 8.7, 0.8], [310.4, 95.1, 13.7, 1.5],
-      [411.2, 131.1, 21.6, 2.9], [514.1, 179.3, 33.9, 5.8],
-      [553.68, 254.88, 45.36, 8.64]
-    ],
-    archer: [
-      [36, 0, 0, 0], [49, 15.2, 0, 0], [71.3, 20.9, 0, 0],
-      [96.5, 33.2, 1.5, 0], [131.1, 43.2, 2.9, 0], [177.2, 59.8, 5.1, 0],
-      [227.6, 90, 8, 0.8], [295.2, 123.9, 13, 1.5],
-      [373.7, 157.7, 20.2, 2.9], [467.3, 233.3, 31, 5.1],
-      [581.04, 234.72, 47.52, 9.36]
-    ],
-    catapult: [
-      [21.6, 0, 0, 0], [39.6, 24.5, 0, 0], [43.2, 34.6, 0, 0],
-      [77.8, 50.4, 1.5, 0], [79.2, 72, 2.2, 0], [141.9, 99.4, 3.6, 0],
-      [182.2, 138.3, 6.5, 0.8], [177.2, 190.1, 8, 0.8],
-      [262.1, 262.1, 15.9, 2.2], [280.08, 357.84, 18.72, 3.6],
-      [442.8, 470.16, 36, 7.2]
-    ]
-  ];
-      function toggleInputMode() {
-    const mode = document.getElementById("inputMode").value;
-    const label = document.getElementById("inputLabel");
-    if (mode === "count") label.innerText = "訓練したい人数:";
-    else if (mode === "power") label.innerText = "獲得したい戦力:";
-    else label.innerText = "獲得したいポイント:";
-  }
+    const baseCost = {
+      infantry: [[43.2,0,0,0],[49.0,15.2,0,0],[85.7,17.3,0,0],[96.5,30.3,1.5,0],[157.7,36.0,3.6,0],[172.2,59.8,5.1,0],
+                 [273.6,69.2,9.4,0.8],[295.2,114.5,13.0,1.5],[448.6,131.1,23.8,3.6],[467.3,215.3,31.0,5.1],[664.56,234.72,54,10.08]],
+      cavalry:  [[38.2,0,0,0],[54.0,12.3,0,0],[74.9,17.3,0,0],[101.6,25.2,1.5,0],[144.8,36.0,2.9,0],[186.5,49.7,5.1,0],
+                 [250.6,69.2,8.7,0.8],[310.4,95.1,13.7,1.5],[411.2,131.1,21.6,2.9],[514.1,179.3,33.9,5.8],[553.68,254.88,45.36,8.64]],
+      archer:   [[36.0,0,0,0],[49.0,15.2,0,0],[71.3,20.9,0,0],[96.5,33.2,1.5,0],[131.1,43.2,2.9,0],[177.2,59.8,5.1,0],
+                 [227.6,90.0,8.0,0.8],[295.2,123.9,13.0,1.5],[373.7,157.7,20.2,2.9],[467.3,233.3,31.0,5.1],[581.04,234.72,47.52,9.36]],
+      catapult: [[21.6,0,0,0],[39.6,24.5,0,0],[43.2,34.6,0,0],[77.8,50.4,1.5,0],[79.2,72.0,2.2,0],[141.9,99.4,3.6,0],
+                 [182.2,138.3,6.5,0.8],[177.2,190.1,8.0,0.8],[262.1,262.1,15.9,2.2],[280.08,357.84,18.72,3.6],[442.80,470.16,36.0,7.2]]
+    };
 
-  function calculate() {
-    const t = parseInt(document.getElementById("tLevel").value);
-    const type = document.getElementById("type").value;
-    const mode = document.getElementById("inputMode").value;
-    const rawInput = parseFloat(document.getElementById("mainInput").value);
-    const speed = parseFloat(document.getElementById("speedBuff").value);
-    const riskaLv = parseInt(document.getElementById("riskaLevel").value);
-    const skill = document.getElementById("skill25").checked;
-    const manual = parseFloat(document.getElementById("manualReduction").value);
-    const timeUnit = document.getElementById("timeUnit").value;
+    function updateLabel() {
+      const mode = document.getElementById("mode").value;
+      const label = document.getElementById("dynamicLabel");
+      if (mode === "count") label.innerHTML = "訓練したい人数:<input type='number' id='inputValue'>";
+      if (mode === "power") label.innerHTML = "獲得したい戦力:<input type='number' id='inputValue'>";
+      if (mode === "points") label.innerHTML = "獲得したいイベントポイント:<input type='number' id='inputValue'>";
+    }
 
-    let count;
-    if (mode === "count") count = rawInput;
-    else if (mode === "power") count = rawInput / powerPerT[t];
-    else count = rawInput / pointsPerT[t];
+    function calculate() {
+      const t = parseInt(document.getElementById("tLevel").value);
+      const type = document.getElementById("type").value;
+      const mode = document.getElementById("mode").value;
+      const raw = parseFloat(document.getElementById("inputValue").value);
+      const buff = parseFloat(document.getElementById("speedBuff").value);
+      const rLv = parseInt(document.getElementById("riskaLevel").value);
+      const skill = document.getElementById("skill25").checked;
+      const manual = parseFloat(document.getElementById("manualReduction").value);
+      const unit = document.getElementById("timeUnit").value;
 
-    const reduction = !isNaN(manual)
-      ? manual
-      : (riskaLv >= 0 && riskaLv <= 8 ? riskaReduction[riskaLv] : 0) + (skill ? 25 : 0);
+      let count;
+      if (mode === "count") count = raw;
+      if (mode === "power") count = raw / powerList[t - 1];
+      if (mode === "points") count = raw / eventPoints[t - 1];
 
-    const baseTime = baseTimeSec[t];
-    const totalTimeSec = baseTime * count * 100 / (100 + speed);
-    let timeStr = "";
-    if (timeUnit === "d") timeStr = (totalTimeSec / 86400).toFixed(2) + "日";
-    else if (timeUnit === "h") timeStr = (totalTimeSec / 3600).toFixed(2) + "時間";
-    else timeStr = (totalTimeSec / 60).toFixed(2) + "分";
+      const reduction = !isNaN(manual)
+        ? manual
+        : (rLv >= 0 && rLv <= 8 ? riskaReduction[rLv] : 0) + (skill ? 25 : 0);
 
-    const cost = baseCost[type][t - 1].map(v => Math.round(v * count * (1 - reduction / 100)));
+      const timeSec = count * baseTime[t - 1] * 100 / (100 + buff);
+      const d = Math.floor(timeSec / 86400);
+      const h = Math.floor((timeSec % 86400) / 3600);
+      const m = Math.floor((timeSec % 3600) / 60);
 
-    document.getElementById("output").innerHTML = `
-      <b>訓練時間：</b>${timeStr}<br><br>
-      <b>軽減後の訓練コスト（${reduction.toFixed(2)}% 減）</b><br>
-      ・食料：${cost[0].toLocaleString()}<br>
-      ・木材：${cost[1].toLocaleString()}<br>
-      ・鉄：${cost[2].toLocaleString()}<br>
-      ・金貨：${cost[3].toLocaleString()}
-    `;
-  }
-</script>
+      const cost = baseCost[type][t - 1];
+      const final = cost.map(v => Math.round(v * count * (1 - reduction / 100)));
+
+      let timeStr = "";
+      if (unit === "day") timeStr = `${d}日 ${h}時間 ${m}分`;
+      if (unit === "hour") timeStr = `${(timeSec / 3600).toFixed(2)} 時間`;
+      if (unit === "minute") timeStr = `${(timeSec / 60).toFixed(0)} 分`;
+
+      document.getElementById("output").innerHTML = `
+        <b>訓練時間：</b>${timeStr}<br><br>
+        <b>軽減後の訓練コスト（${reduction.toFixed(2)}% 減）</b><br>
+        ・食料：${final[0].toLocaleString()}<br>
+        ・木材：${final[1].toLocaleString()}<br>
+        ・鉄：${final[2].toLocaleString()}<br>
+        ・金貨：${final[3].toLocaleString()}
+      `;
+    }
+  </script>
 </body>
 </html>
