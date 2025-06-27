@@ -40,9 +40,15 @@
     #riskaLabel {
       display: flex; align-items: center; justify-content: space-between;
     }
-    #riskaDetailBtn {
-      margin-left: 10px; font-size: 0.9em;
-      padding: 4px 8px; cursor: pointer;
+    #riskaInfoIcon {
+      font-size: 1.1em;
+      margin-left: 10px;
+      background: #0077cc;
+      color: white;
+      border-radius: 50%;
+      padding: 0 8px;
+      cursor: pointer;
+      user-select: none;
     }
     @media (min-width: 600px) {
       body { max-width: 600px; margin: auto; }
@@ -54,7 +60,17 @@
 
   <label>Tレベル（T1〜T11）:
     <select id="tLevel">
-      ${[...Array(11).keys()].map(i => `<option value="${i+1}">T${i+1}</option>`).join("")}
+      <option value="1">T1</option>
+      <option value="2">T2</option>
+      <option value="3">T3</option>
+      <option value="4">T4</option>
+      <option value="5">T5</option>
+      <option value="6">T6</option>
+      <option value="7">T7</option>
+      <option value="8">T8</option>
+      <option value="9">T9</option>
+      <option value="10">T10</option>
+      <option value="11">T11</option>
     </select>
   </label>
 
@@ -84,10 +100,18 @@
 
   <label id="riskaLabel">
     リスカの+値（Lv.131解放済とする）:
-    <button id="riskaDetailBtn" onclick="showPopup()">詳細</button>
+    <span id="riskaInfoIcon" onclick="showPopup()">ℹ️</span>
   </label>
   <select id="riskaLevel">
-    ${[...Array(9).keys()].map(i => `<option value="${i}">+${i}</option>`).join("")}
+    <option value="0">+0</option>
+    <option value="1">+1</option>
+    <option value="2">+2</option>
+    <option value="3">+3</option>
+    <option value="4">+4</option>
+    <option value="5">+5</option>
+    <option value="6">+6</option>
+    <option value="7">+7</option>
+    <option value="8">+8</option>
   </select>
 
   <label><input type="checkbox" id="skill25"> スキル（−25%）をONにする</label>
@@ -116,13 +140,13 @@
 
     const baseCost = {
       infantry: [[43.2,0,0,0],[49.0,15.2,0,0],[85.7,17.3,0,0],[96.5,30.3,1.5,0],[157.7,36.0,3.6,0],[172.2,59.8,5.1,0],
-      [273.6,69.2,9.4,0.8],[295.2,114.5,13.0,1.5],[448.6,131.1,23.8,3.6],[467.3,215.3,31.0,5.1],[664.56,234.72,54,10.08]],
-      cavalry:  [[38.2,0,0,0],[54.0,12.3,0,0],[74.9,17.3,0,0],[101.6,25.2,1.5,0],[144.8,36.0,2.9,0],[186.5,49.7,5.1,0],
-      [250.6,69.2,8.7,0.8],[310.4,95.1,13.7,1.5],[411.2,131.1,21.6,2.9],[514.1,179.3,33.9,5.8],[553.68,254.88,45.36,8.64]],
-      archer:   [[36.0,0,0,0],[49.0,15.2,0,0],[71.3,20.9,0,0],[96.5,33.2,1.5,0],[131.1,43.2,2.9,0],[177.2,59.8,5.1,0],
-      [227.6,90.0,8.0,0.8],[295.2,123.9,13.0,1.5],[373.7,157.7,20.2,2.9],[467.3,233.3,31.0,5.1],[581.04,234.72,47.52,9.36]],
+        [273.6,69.2,9.4,0.8],[295.2,114.5,13.0,1.5],[448.6,131.1,23.8,3.6],[467.3,215.3,31.0,5.1],[664.56,234.72,54,10.08]],
+      cavalry: [[38.2,0,0,0],[54.0,12.3,0,0],[74.9,17.3,0,0],[101.6,25.2,1.5,0],[144.8,36.0,2.9,0],[186.5,49.7,5.1,0],
+        [250.6,69.2,8.7,0.8],[310.4,95.1,13.7,1.5],[411.2,131.1,21.6,2.9],[514.1,179.3,33.9,5.8],[553.68,254.88,45.36,8.64]],
+      archer: [[36.0,0,0,0],[49.0,15.2,0,0],[71.3,20.9,0,0],[96.5,33.2,1.5,0],[131.1,43.2,2.9,0],[177.2,59.8,5.1,0],
+        [227.6,90.0,8.0,0.8],[295.2,123.9,13.0,1.5],[373.7,157.7,20.2,2.9],[467.3,233.3,31.0,5.1],[581.04,234.72,47.52,9.36]],
       catapult: [[21.6,0,0,0],[39.6,24.5,0,0],[43.2,34.6,0,0],[77.8,50.4,1.5,0],[79.2,72.0,2.2,0],[141.9,99.4,3.6,0],
-      [182.2,138.3,6.5,0.8],[177.2,190.1,8.0,0.8],[262.1,262.1,15.9,2.2],[280.08,357.84,18.72,3.6],[442.80,470.16,36.0,7.2]]
+        [182.2,138.3,6.5,0.8],[177.2,190.1,8.0,0.8],[262.1,262.1,15.9,2.2],[280.08,357.84,18.72,3.6],[442.80,470.16,36.0,7.2]]
     };
 
     function updateLabel() {
