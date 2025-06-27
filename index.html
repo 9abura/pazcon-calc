@@ -83,142 +83,142 @@
   </select>
 </label>
 
-  <label>兵種を選択:
-    <select id="type">
-      <option value="infantry">歩兵</option>
-      <option value="cavalry">騎兵</option>
-      <option value="archer">弓兵</option>
-      <option value="catapult">カタパルト</option>
-    </select>
-  </label>
-
-  <label>訓練人数 or 戦力 or イベントポイント(最強ロード):
-    <select id="mode" onchange="updateLabel()">
-      <option value="count">訓練人数</option>
-      <option value="power">獲得したい戦力</option>
-      <option value="points">獲得したいイベントポイント</option>
-    </select>
-  </label>
-
-  <label id="dynamicLabel">訓練したい人数:</label>
-  <input type="number" id="inputValue" value="">
-
-  <label>訓練速度バフ（％）:
-    <input type="number" id="speedBuff" value="">
-  </label>
-
-  <label class="inline-label">
-    リスカの+値（Lv.131解放済とする）：
-    <div class="info-icon" onclick="alert('※ +5以上の軽減率は昇進級後の値')">!</div>
-  </label>
-  <select id="riskaLevel">
-    <option value="none">所持していない</option>
-    <option value="0">+0</option>
-    <option value="1">+1</option>
-    <option value="2">+2</option>
-    <option value="3">+3</option>
-    <option value="4">+4</option>
-    <option value="5">+5</option>
-    <option value="6">+6</option>
-    <option value="7">+7</option>
-    <option value="8">+8</option>
+<label>兵種を選択:
+  <select id="type">
+    <option value="infantry">歩兵</option>
+    <option value="cavalry">騎兵</option>
+    <option value="archer">弓兵</option>
+    <option value="catapult">カタパルト</option>
   </select>
+</label>
 
-  <label><input type="checkbox" id="skill25"> スキル（−25%）をONにする</label>
+<label>訓練人数 or 戦力 or イベントポイント(最強ロード):
+  <select id="mode" onchange="updateLabel()">
+    <option value="count">訓練人数</option>
+    <option value="power">獲得したい戦力</option>
+    <option value="points">獲得したいイベントポイント</option>
+  </select>
+</label>
 
-  <label>コスト軽減率を手入力（任意）:
-    <input type="number" id="manualReduction" placeholder="例：28">
-  </label>
+<label id="dynamicLabel">訓練したい人数:</label>
+<input type="number" id="inputValue" value="">
 
-  <label>時間表示単位:
-    <select id="timeUnit">
-      <option value="day">日</option>
-      <option value="hour">時間</option>
-      <option value="minute">分</option>
-    </select>
-  </label>
+<label>訓練速度バフ（％）:
+  <input type="number" id="speedBuff" value="">
+</label>
 
-  <button onclick="calculate()">計算する</button>
+<label class="inline-label">
+  リスカの+値（Lv.131解放済とする）：
+  <div class="info-icon" onclick="alert('※ +5以上の軽減率は昇進級後の値')">!</div>
+</label>
+<select id="riskaLevel">
+  <option value="none">所持していない</option>
+  <option value="0">+0</option>
+  <option value="1">+1</option>
+  <option value="2">+2</option>
+  <option value="3">+3</option>
+  <option value="4">+4</option>
+  <option value="5">+5</option>
+  <option value="6">+6</option>
+  <option value="7">+7</option>
+  <option value="8">+8</option>
+</select>
 
-  <div class="result" id="output">▼ここに訓練時間と資源コストが表示されます</div>
+<label><input type="checkbox" id="skill25"> スキル（−25%）をONにする</label>
 
-  <script>
-    const baseTime = [18,23,30,39,51,66,81,99,120,150,260];
-    const riskaReduction = [3,4.5,6,9,12,18.75,24,26,28];
-    const powerList = [4,6,8,12,15,20,25,33,45,60,80];
-    const eventPoints = [5,10,15,22,30,40,55,70,85,110,120];
+<label>コスト軽減率を手入力（任意）:
+  <input type="number" id="manualReduction" placeholder="例：28">
+</label>
 
-    const baseCost = {
-      infantry: [[36,5,0,0],[54,13,0,0],[74,24,0,0],[103,39,0,0],[135,50,11,0],[182,78,15,0],[234,108,22,0],[312,157,31,0],[421,225,45,0],[558,315,63,6],[885,472,94,9]],
-      cavalry:  [[36,5,0,0],[54,13,0,0],[74,24,0,0],[103,39,0,0],[135,50,11,0],[182,78,15,0],[234,108,22,0],[312,157,31,0],[421,225,45,0],[558,315,63,6],[885,472,94,9]],
-      archer:   [[36,5,0,0],[54,13,0,0],[74,24,0,0],[103,39,0,0],[135,50,11,0],[182,78,15,0],[234,108,22,0],[312,157,31,0],[421,225,45,0],[558,315,63,6],[885,472,94,9]],
-      catapult: [[36,5,0,0],[54,13,0,0],[74,24,0,0],[103,39,0,0],[135,50,11,0],[182,78,15,0],[234,108,22,0],[312,157,31,0],[421,225,45,0],[684,382,81,8],[990,540,108,10]]
-    };
+<label>時間表示単位:
+  <select id="timeUnit">
+    <option value="day">日</option>
+    <option value="hour">時間</option>
+    <option value="minute">分</option>
+  </select>
+</label>
 
-    function updateLabel() {
-      const mode = document.getElementById("mode").value;
-      const label = document.getElementById("dynamicLabel");
-      if (mode === "count") label.textContent = "訓練したい人数:";
-      if (mode === "power") label.textContent = "獲得したい戦力:";
-      if (mode === "points") label.textContent = "獲得したいイベントポイント:";
-    }
+<button onclick="calculate()">計算する</button>
 
-    function calculate() {
-      const t = parseInt(document.getElementById("tLevel").value);
-      const type = document.getElementById("type").value;
-      const mode = document.getElementById("mode").value;
-      const input = document.getElementById("inputValue");
-      const buffInput = document.getElementById("speedBuff");
+<div class="result" id="output">▼ここに訓練時間と資源コストが表示されます</div>
 
-      let hasError = false;
-      [input, buffInput].forEach(el => {
-        if (!el.value) {
-          el.classList.add("error");
-          hasError = true;
-        } else {
-          el.classList.remove("error");
-        }
-      });
-      if (hasError) return;
+<script>
+  const baseTime = [18.0, 23.0, 30.0, 39.0, 51.0, 66.0, 88.0, 115.0, 150.0, 197.0, 260.0];
+  const riskaReduction = [3,4.5,6,9,12,18.75,24,26,28];
+  const powerList = [4,6,8,12,15,20,25,33,45,60,80];
+  const eventPoints = [5,10,15,22,30,40,55,70,85,110,120];
 
-      const raw = parseFloat(input.value);
-      const buff = parseFloat(buffInput.value);
-      const rLv = document.getElementById("riskaLevel").value;
-      const skill = document.getElementById("skill25").checked;
-      const manual = parseFloat(document.getElementById("manualReduction").value);
-      const unit = document.getElementById("timeUnit").value;
+  const baseCost = {
+    infantry: [[3624,562,0,0],[5431,1312,0,0],[7496,2437,0,0],[10387,3937,0,0],[13518,5062,1125,0],[18225,7875,1575,0],[23400,10875,2250,0],[31200,15750,3150,0],[42112,22500,4500,0],[55800,31500,6300,630],[88500,47250,9450,945]],
+    cavalry:  [[3624,562,0,0],[5431,1312,0,0],[7496,2437,0,0],[10387,3937,0,0],[13518,5062,1125,0],[18225,7875,1575,0],[23400,10875,2250,0],[31200,15750,3150,0],[42112,22500,4500,0],[55800,31500,6300,630],[88500,47250,9450,945]],
+    archer:   [[3624,562,0,0],[5431,1312,0,0],[7496,2437,0,0],[10387,3937,0,0],[13518,5062,1125,0],[18225,7875,1575,0],[23400,10875,2250,0],[31200,15750,3150,0],[42112,22500,4500,0],[55800,31500,6300,630],[88500,47250,9450,945]],
+    catapult: [[3624,562,0,0],[5431,1312,0,0],[7496,2437,0,0],[10387,3937,0,0],[13518,5062,1125,0],[18225,7875,1575,0],[23400,10875,2250,0],[31200,15750,3150,0],[42112,22500,4500,0],[68400,38250,8100,810],[99000,54000,10800,1080]]
+  };
 
-      let count;
-      if (mode === "count") count = raw;
-      if (mode === "power") count = raw / powerList[t - 1];
-      if (mode === "points") count = raw / eventPoints[t - 1];
+  function updateLabel() {
+    const mode = document.getElementById("mode").value;
+    const label = document.getElementById("dynamicLabel");
+    if (mode === "count") label.textContent = "訓練したい人数:";
+    if (mode === "power") label.textContent = "獲得したい戦力:";
+    if (mode === "points") label.textContent = "獲得したいイベントポイント:";
+  }
 
-      const reduction = !isNaN(manual)
-        ? manual
-        : (rLv === "none" ? 0 : riskaReduction[parseInt(rLv)]) + (skill ? 25 : 0);
+  function calculate() {
+    const t = parseInt(document.getElementById("tLevel").value);
+    const type = document.getElementById("type").value;
+    const mode = document.getElementById("mode").value;
+    const input = document.getElementById("inputValue");
+    const buffInput = document.getElementById("speedBuff");
 
-      const timeSec = count * baseTime[t - 1] * 100 / (100 + buff);
-      const d = Math.floor(timeSec / 86400);
-      const h = Math.floor((timeSec % 86400) / 3600);
-      const m = Math.floor((timeSec % 3600) / 60);
+    let hasError = false;
+    [input, buffInput].forEach(el => {
+      if (!el.value) {
+        el.classList.add("error");
+        hasError = true;
+      } else {
+        el.classList.remove("error");
+      }
+    });
+    if (hasError) return;
 
-      const cost = baseCost[type][t - 1];
-      const final = cost.map(v => Math.round(v * count * (1 - reduction / 100)));
+    const raw = parseFloat(input.value);
+    const buff = parseFloat(buffInput.value);
+    const rLv = document.getElementById("riskaLevel").value;
+    const skill = document.getElementById("skill25").checked;
+    const manual = parseFloat(document.getElementById("manualReduction").value);
+    const unit = document.getElementById("timeUnit").value;
 
-      let timeStr = "";
-      if (unit === "day") timeStr = `${d}日 ${h}時間 ${m}分`;
-      if (unit === "hour") timeStr = `${(timeSec / 3600).toFixed(2)} 時間`;
-      if (unit === "minute") timeStr = `${(timeSec / 60).toFixed(0)} 分`;
+    let count;
+    if (mode === "count") count = raw;
+    if (mode === "power") count = raw / powerList[t - 1];
+    if (mode === "points") count = raw / eventPoints[t - 1];
 
-      document.getElementById("output").innerHTML = `
-        <b>訓練時間：</b>${timeStr}<br><br>
-        <b>軽減後の訓練コスト（${reduction.toFixed(2)}% 減）</b><br>
-        ・食料：${final[0].toLocaleString()}<br>
-        ・木材：${final[1].toLocaleString()}<br>
-        ・鉄：${final[2].toLocaleString()}<br>
-        ・金貨：${final[3].toLocaleString()}
-      `;
-    }
-  </script>
+    const reduction = !isNaN(manual)
+      ? manual
+      : (rLv === "none" ? 0 : riskaReduction[parseInt(rLv)]) + (skill ? 25 : 0);
+
+    const timeSec = count * baseTime[t - 1] * 100 / (100 + buff);
+    const d = Math.floor(timeSec / 86400);
+    const h = Math.floor((timeSec % 86400) / 3600);
+    const m = Math.floor((timeSec % 3600) / 60);
+
+    const cost = baseCost[type][t - 1];
+    const final = cost.map(v => Math.round(v * count * (1 - reduction / 100)));
+
+    let timeStr = "";
+    if (unit === "day") timeStr = `${d}日 ${h}時間 ${m}分`;
+    if (unit === "hour") timeStr = `${(timeSec / 3600).toFixed(2)} 時間`;
+    if (unit === "minute") timeStr = `${(timeSec / 60).toFixed(0)} 分`;
+
+    document.getElementById("output").innerHTML = `
+      <b>訓練時間：</b>${timeStr}<br><br>
+      <b>軽減後の訓練コスト（${reduction.toFixed(2)}% 減）</b><br>
+      ・食料：${final[0].toLocaleString()}<br>
+      ・木材：${final[1].toLocaleString()}<br>
+      ・鉄：${final[2].toLocaleString()}<br>
+      ・金貨：${final[3].toLocaleString()}
+    `;
+  }
+</script>
 </body>
 </html>
