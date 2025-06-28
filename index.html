@@ -213,7 +213,7 @@
       const base = baseCost[type][t - 1];   // 10人分・−28%済
 const cost = base.map(v =>
   Math.round(
-    v / 0.72 / 10 * count * (1 - totalReduction / 100)
+    v / 0.72 / 10 * count * (1 - Reduction / 100)
   )
 );
 
@@ -224,7 +224,8 @@ const cost = base.map(v =>
 
       document.getElementById("output").innerHTML = `
         <b>訓練時間：約</b>${timeStr}<br><br>
-        <b>軽減後の訓練コスト(若干の誤差が生じる場合があります)（${reduction.toFixed(2)}% 減）</b><br>
+        <b>軽減後の訓練コスト（${reduction.toFixed(2)}% 減）</b><br>
+        <small>（若干の誤差が生じる場合があります）</small><br>ー
         ・食料：${final[0].toLocaleString()}<br>
         ・木材：${final[1].toLocaleString()}<br>
         ・鉄：${final[2].toLocaleString()}<br>
