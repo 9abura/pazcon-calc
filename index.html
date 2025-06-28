@@ -223,8 +223,8 @@ const cost = base.map(v =>
       if (unit === "minute") timeStr = `${(timeSec / 60).toFixed(0)} 分`;
 
       document.getElementById("output").innerHTML = `
-        <b>訓練時間：</b>${timeStr}<br><br>
-        <b>軽減後の訓練コスト（${reduction.toFixed(2)}% 減）</b><br>
+        <b>訓練時間：約</b>${timeStr}<br><br>
+        <b>軽減後の訓練コスト(若干の誤差が生じる場合があります)（${reduction.toFixed(2)}% 減）</b><br>
         ・食料：${final[0].toLocaleString()}<br>
         ・木材：${final[1].toLocaleString()}<br>
         ・鉄：${final[2].toLocaleString()}<br>
