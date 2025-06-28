@@ -213,7 +213,7 @@
       const base = baseCost[type][t - 1];   // 10人分・−28%済
 const cost = base.map(v =>
   Math.round(
-    v / 0.72 / 10 * count * (1 - reduction / 100)
+    v / 0.72 / 100 * count * (1 - reduction / 100)
   )
 );
 
