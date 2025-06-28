@@ -210,8 +210,12 @@
       const h = Math.floor((timeSec % 86400) / 3600);
       const m = Math.floor((timeSec % 3600) / 60);
 
-      const cost = baseCost[type][t - 1];
-      const final = cost.map(v => Math.round(v * (count / 10) * (1 - reduction / 100)));
+      const base = baseCost[type][t - 1];   // 10人分・−28%済
+const cost = base.map(v =>
+  Math.round(
+    v / 0.72 / 10 * count * (1 - totalReduction / 100)
+  )
+);
 
       let timeStr = "";
       if (unit === "day") timeStr = `${d}日 ${h}時間 ${m}分`;
